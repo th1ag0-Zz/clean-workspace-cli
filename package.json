@@ -1,11 +1,11 @@
 {
-  "name": "dev-cleaner",
+  "name": "clean-workspace-cli",
   "version": "1.0.0",
   "description": "🧹 CLI helper to clean dev environment junk — node_modules, caches, build artifacts and more.",
   "type": "module",
   "main": "src/index.js",
   "bin": {
-    "dev-cleaner": "./src/index.js"
+    "cw": "./src/index.js"
   },
   "scripts": {
     "start": "node src/index.js",
