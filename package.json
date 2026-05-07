@@ -1,0 +1,47 @@
+{
+  "name": "wipe-dev",
+  "version": "1.0.0",
+  "description": "🧹 CLI helper to clean dev environment junk — node_modules, caches, build artifacts and more.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "devclean": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "cli",
+    "clean",
+    "node_modules",
+    "cache",
+    "dev",
+    "developer",
+    "tools",
+    "cleanup",
+    "next",
+    "react-native",
+    "expo",
+    "npm-cache",
+    "yarn-cache"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.3",
+    "execa": "^8.0.1",
+    "glob": "^10.3.10",
+    "inquirer": "^9.2.12",
+    "ora": "^8.0.1",
+    "pretty-bytes": "^6.1.1"
+  },
+  "files": [
+    "src/",
+    "README.md"
+  ]
+}
