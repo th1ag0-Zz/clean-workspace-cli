@@ -7,15 +7,15 @@ Scans your current working directory (or global caches) and lets you selectively
 ## Install
 
 ```bash
-npm install -g devclean
+npm install -g clean-workspace-cli
 # or
-npx devclean
+npx clean-workspace-cli
 ```
 
 ## Usage
 
 ```bash
-devclean
+cw
 ```
 
 Run it from inside any project folder — it will scan from that directory down.
