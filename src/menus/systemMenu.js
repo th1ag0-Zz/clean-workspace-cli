@@ -1,9 +1,16 @@
+import { createRequire } from 'node:module';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { formatSize } from '../cleaners/scanner.js';
-import { deleteDir } from '../cleaners/cleaner.js';
-import { scanSystemTargets } from '../cleaners/systemScanner.js';
+import { loadConfiguration } from '../core/config.js';
+import { executeCleanupPlanWithSignals } from '../core/executor.js';
+import { createReceipt, writeReceipt } from '../core/history.js';
+import { CleanupPlan } from '../core/models.js';
+import { smartScan } from '../core/scanner.js';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../../package.json');
 
 export async function showSystemCleanMenu() {
   console.clear();
@@ -37,7 +44,12 @@ export async function showSystemCleanMenu() {
 async function runSystemClean() {
   console.log();
   const spinner = ora({ text: chalk.dim('Scanning system locations...'), color: 'cyan' }).start();
-  const targets = await scanSystemTargets();
+  const loaded = await loadConfiguration({ workspaceRoot: process.cwd() });
+  const targets = await smartScan({
+    mode: 'system',
+    concurrency: loaded.config.concurrency,
+    excludedPaths: loaded.excludedPaths,
+  });
   spinner.stop();
 
   const availableTargets = targets.filter((target) => target.items.length > 0);
@@ -51,7 +63,7 @@ async function runSystemClean() {
   console.log();
   for (const target of availableTargets) {
     console.log(
-      `  ${target.icon} ${chalk.bold(target.label)}` +
+      `  ${target.target.icon} ${chalk.bold(target.target.label)}` +
       chalk.dim(` — ${target.items.length} item(s) — `) +
       chalk.yellow(formatSize(sumSize(target.items)))
     );
@@ -73,10 +85,10 @@ async function runSystemClean() {
         const size = sumSize(target.items);
         return {
           name:
-            `${target.icon} ${chalk.bold(target.label)}` +
+            `${target.target.icon} ${chalk.bold(target.target.label)}` +
             chalk.dim(` — ${target.items.length} item(s) — `) +
             chalk.yellow(formatSize(size)) +
-            chalk.dim(`  ${target.description}`),
+            chalk.dim(`  ${target.target.description}`),
           value: target,
           checked: false,
         };
@@ -91,8 +103,15 @@ async function runSystemClean() {
     return;
   }
 
-  const itemCount = selected.reduce((total, target) => total + target.items.length, 0);
-  const totalSize = selected.reduce((total, target) => total + sumSize(target.items), 0);
+  if (loaded.config.sensitivePolicy === 'deny') {
+    console.log(chalk.yellow('\n  Sensitive cleanup is disabled by configuration.\n'));
+    await promptContinue();
+    return;
+  }
+
+  const plan = CleanupPlan.from(selected);
+  const itemCount = plan.entries.length;
+  const totalSize = plan.entries.reduce((total, item) => total + item.size, 0);
 
   console.log();
   const { confirmed } = await inquirer.prompt([
@@ -112,37 +131,42 @@ async function runSystemClean() {
     return;
   }
 
-  console.log();
-  let deleted = 0;
-  let freed = 0;
-
-  for (const target of selected) {
-    const targetSpinner = ora({ text: `Cleaning ${target.label}...`, color: 'cyan' }).start();
-    let failed = 0;
-
-    for (const item of target.items) {
-      const result = deleteDir(item.path);
-      if (result.success && !result.skipped) {
-        deleted++;
-        freed += item.size;
-      } else if (!result.success) {
-        failed++;
-      }
-    }
-
-    if (failed === 0) {
-      targetSpinner.succeed(chalk.green(`${target.icon} ${target.label} cleared`));
-    } else {
-      targetSpinner.warn(
-        chalk.yellow(`${target.icon} ${target.label}`) + chalk.dim(` — ${failed} item(s) failed`)
-      );
-    }
+  const { reinforced } = await inquirer.prompt([{
+    type: 'input',
+    name: 'reinforced',
+    message: 'Sensitive system items selected. Type "DELETE SENSITIVE" to continue:',
+  }]);
+  if (reinforced !== 'DELETE SENSITIVE') {
+    console.log(chalk.dim('\n  Confirmation did not match. Cancelled.\n'));
+    await promptContinue();
+    return;
   }
 
   console.log();
+  const targetSpinner = ora({ text: 'Cleaning selected system items...', color: 'cyan' }).start();
+  const { report } = await executeCleanupPlanWithSignals(plan, {
+    onItem: (_result, completed, total) => {
+      targetSpinner.text = `Cleaning selected system items... ${completed}/${total}`;
+    },
+  });
+  let receiptPath = null;
+  try {
+    const receipt = createReceipt({
+      version, args: ['interactive', '--system'], preset: null, plan, report,
+    });
+    receiptPath = await writeReceipt(receipt);
+  } catch (error) {
+    console.log(chalk.yellow(`  Warning: cleanup receipt could not be saved: ${error.message}`));
+  }
+  if (report.aborted) targetSpinner.warn(chalk.yellow(`Interrupted — ${report.deleted} deleted, ${report.skipped} skipped`));
+  else if (report.failed === 0) targetSpinner.succeed(chalk.green(`${report.deleted} item(s) deleted`));
+  else targetSpinner.warn(chalk.yellow(`${report.deleted} deleted, ${report.failed} failed`));
+  if (receiptPath) console.log(chalk.dim(`  Receipt: ${receiptPath}`));
+
+  console.log();
   console.log(
-    chalk.bold(`  ✓ Done! Deleted ${deleted} item(s), freed `) +
-    chalk.green.bold(formatSize(freed))
+    chalk.bold(`  ✓ Done! Deleted ${report.deleted} item(s), freed `) +
+    chalk.green.bold(formatSize(report.freed))
   );
   console.log();
   await promptContinue();
