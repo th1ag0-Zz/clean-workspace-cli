@@ -1,6 +1,6 @@
 {
   "name": "clean-workspace-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "🧹 CLI helper to clean dev environment junk — node_modules, caches, build artifacts and more.",
   "type": "module",
   "main": "src/index.js",
@@ -11,10 +11,9 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test",
-    "build": "tsc",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "changeset publish"
   },
   "keywords": [
     "cli",
@@ -50,6 +49,7 @@
     "README.md"
   ],
   "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3"
   }
 }
