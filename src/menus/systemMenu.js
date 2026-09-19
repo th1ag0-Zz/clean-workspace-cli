@@ -22,7 +22,7 @@ export async function showSystemCleanMenu() {
       message: chalk.bold('Choose an action:'),
       choices: [
         {
-          name: `${chalk.blue('🔍')} Scan and clean  ${chalk.dim('(Trash, old Downloads and logs)')}`,
+          name: `${chalk.blue('🔍')} Scan and clean  ${chalk.dim('(Trash, Downloads, logs and caches)')}`,
           value: 'clean',
         },
         new inquirer.Separator(chalk.dim('─────────────────────────────────────')),

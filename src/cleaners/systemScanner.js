@@ -5,6 +5,8 @@ import os from 'os';
 export const DEFAULT_MIN_AGE_DAYS = 30;
 
 export function getSystemTargets(homeDir = os.homedir()) {
+  const userCachesPath = join(homeDir, 'Library', 'Caches');
+
   return [
     {
       id: 'trash',
@@ -29,6 +31,24 @@ export function getSystemTargets(homeDir = os.homedir()) {
       icon: '📜',
       path: join(homeDir, 'Library', 'Logs'),
       minAgeDays: DEFAULT_MIN_AGE_DAYS,
+    },
+    {
+      id: 'app_caches',
+      label: 'Other app caches',
+      description: 'Per-user caches created by installed apps',
+      icon: '🧩',
+      path: userCachesPath,
+      minAgeDays: 0,
+      includeEntry: (entry) => !isAppleCache(entry.name),
+    },
+    {
+      id: 'macos_caches',
+      label: 'macOS caches',
+      description: 'Per-user caches managed by macOS and Apple apps',
+      icon: '🍎',
+      path: userCachesPath,
+      minAgeDays: 0,
+      includeEntry: (entry) => isAppleCache(entry.name),
     },
   ];
 }
@@ -60,6 +80,10 @@ async function scanTarget(target, now) {
     return [];
   }
 
+  if (target.includeEntry) {
+    entries = entries.filter(target.includeEntry);
+  }
+
   const cutoff = now - target.minAgeDays * 24 * 60 * 60 * 1000;
   const inspected = await Promise.all(
     entries.map((entry) => inspectPath(join(target.path, entry.name)))
@@ -69,6 +93,10 @@ async function scanTarget(target, now) {
     .filter(Boolean)
     .filter((item) => target.minAgeDays === 0 || item.modifiedAt <= cutoff)
     .sort((a, b) => a.modifiedAt - b.modifiedAt);
+}
+
+function isAppleCache(name) {
+  return name === 'Apple' || name.startsWith('com.apple.');
 }
 
 async function inspectPath(itemPath) {

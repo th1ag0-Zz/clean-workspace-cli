@@ -7,7 +7,7 @@ import { scanSystemTargets } from '../src/cleaners/systemScanner.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-test('system scan includes Trash and only items wholly older than 30 days', async (t) => {
+test('system scan includes cleanup locations and only age-filters age-sensitive targets', async (t) => {
   const homeDir = await mkdtemp(join(os.tmpdir(), 'cw-system-scan-'));
   t.after(() => rm(homeDir, { recursive: true, force: true }));
 
@@ -19,6 +19,8 @@ test('system scan includes Trash and only items wholly older than 30 days', asyn
   await mkdir(join(homeDir, 'Downloads', 'old-folder'), { recursive: true });
   await mkdir(join(homeDir, 'Downloads', 'mixed-folder'), { recursive: true });
   await mkdir(join(homeDir, 'Library', 'Logs'), { recursive: true });
+  await mkdir(join(homeDir, 'Library', 'Caches', 'Google'), { recursive: true });
+  await mkdir(join(homeDir, 'Library', 'Caches', 'com.apple.Safari'), { recursive: true });
 
   const trashFile = join(homeDir, '.Trash', 'recent-trash.txt');
   const oldDownload = join(homeDir, 'Downloads', 'old.zip');
@@ -26,6 +28,8 @@ test('system scan includes Trash and only items wholly older than 30 days', asyn
   const oldNestedFile = join(homeDir, 'Downloads', 'old-folder', 'archive.txt');
   const recentNestedFile = join(homeDir, 'Downloads', 'mixed-folder', 'keep.txt');
   const oldLog = join(homeDir, 'Library', 'Logs', 'old.log');
+  const appCache = join(homeDir, 'Library', 'Caches', 'Google', 'cache.db');
+  const macosCache = join(homeDir, 'Library', 'Caches', 'com.apple.Safari', 'cache.db');
 
   await Promise.all([
     writeFile(trashFile, 'trash'),
@@ -34,6 +38,8 @@ test('system scan includes Trash and only items wholly older than 30 days', asyn
     writeFile(oldNestedFile, 'old nested file'),
     writeFile(recentNestedFile, 'recent nested file'),
     writeFile(oldLog, 'old log'),
+    writeFile(appCache, 'app cache'),
+    writeFile(macosCache, 'macOS cache'),
   ]);
 
   await Promise.all([
@@ -54,6 +60,8 @@ test('system scan includes Trash and only items wholly older than 30 days', asyn
     ['old-folder', 'old.zip']
   );
   assert.deepEqual(byId.logs.items.map((item) => item.name), ['old.log']);
+  assert.deepEqual(byId.app_caches.items.map((item) => item.name), ['Google']);
+  assert.deepEqual(byId.macos_caches.items.map((item) => item.name), ['com.apple.Safari']);
   assert.equal(byId.downloads.items.find((item) => item.name === 'old-folder').size, 15);
 });
 
@@ -63,6 +71,6 @@ test('system scan returns empty groups when user locations do not exist', async 
 
   const results = await scanSystemTargets({ homeDir });
 
-  assert.equal(results.length, 3);
+  assert.equal(results.length, 5);
   assert.ok(results.every((target) => target.items.length === 0));
 });

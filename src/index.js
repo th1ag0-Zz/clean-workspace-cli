@@ -42,7 +42,7 @@ async function showMainMenu() {
           value: 'dev',
         },
         {
-          name: `${chalk.blue('🖥 ')} ${chalk.bold('System Cleanup')}       ${chalk.dim('Trash, old Downloads, logs...')}`,
+          name: `${chalk.blue('🖥 ')} ${chalk.bold('System Cleanup')}       ${chalk.dim('Trash, Downloads, app and macOS caches...')}`,
           value: 'system',
         },
         new inquirer.Separator(chalk.dim('─────────────────────────────────────')),

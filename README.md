@@ -60,9 +60,14 @@ Scans macOS user locations and lets you selectively delete:
 - Everything currently in the **Trash**
 - Top-level items in **Downloads** untouched for at least 30 days
 - App entries in `~/Library/Logs` untouched for at least 30 days
+- Per-user caches from **installed apps** in `~/Library/Caches`
+- Per-user caches managed by **macOS and Apple apps** in `~/Library/Caches`
 
 Folders are only considered old when none of their contents were modified in
-the last 30 days. Every cleanup requires an explicit selection and confirmation.
+the last 30 days. Cache groups can contain recent items because their contents
+are disposable and recreated by their owning app or macOS. Every cleanup
+requires an explicit selection and confirmation; system-wide `/Library/Caches`
+is never touched and the CLI never requests administrator privileges.
 
 ## Requirements
 
