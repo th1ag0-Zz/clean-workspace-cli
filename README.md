@@ -53,9 +53,16 @@ Clears global caches **outside** of your project:
 - **CocoaPods** cache
 - **Metro** bundler `/tmp` cache
 
-### 🖥 System Cleanup *(coming soon)*
+### 🖥 System Cleanup
 
-System-level cleanup: Trash, Downloads, old logs, etc.
+Scans macOS user locations and lets you selectively delete:
+
+- Everything currently in the **Trash**
+- Top-level items in **Downloads** untouched for at least 30 days
+- App entries in `~/Library/Logs` untouched for at least 30 days
+
+Folders are only considered old when none of their contents were modified in
+the last 30 days. Every cleanup requires an explicit selection and confirmation.
 
 ## Requirements
 

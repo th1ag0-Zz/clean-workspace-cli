@@ -25,7 +25,9 @@ async function main() {
   console.log(VERSION);
   console.log();
 
-  await showMainMenu();
+  while (await showMainMenu()) {
+    // Cleanup menus return here so the user can choose another section.
+  }
 }
 
 async function showMainMenu() {
@@ -40,7 +42,7 @@ async function showMainMenu() {
           value: 'dev',
         },
         {
-          name: `${chalk.blue('🖥 ')} ${chalk.bold('System Cleanup')}       ${chalk.dim('coming soon...')}`,
+          name: `${chalk.blue('🖥 ')} ${chalk.bold('System Cleanup')}       ${chalk.dim('Trash, old Downloads, logs...')}`,
           value: 'system',
         },
         new inquirer.Separator(chalk.dim('─────────────────────────────────────')),
@@ -55,13 +57,13 @@ async function showMainMenu() {
   switch (option) {
     case 'dev':
       await showDevCleanMenu();
-      break;
+      return true;
     case 'system':
       await showSystemCleanMenu();
-      break;
+      return true;
     case 'exit':
       console.log(chalk.dim('\n  Bye! Keep your env clean. 🧹\n'));
-      process.exit(0);
+      return false;
   }
 }
 
