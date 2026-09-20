@@ -1,6 +1,6 @@
 {
   "name": "clean-workspace-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "🧹 CLI helper to clean dev environment junk — node_modules, caches, build artifacts and more.",
   "type": "module",
   "main": "src/index.js",

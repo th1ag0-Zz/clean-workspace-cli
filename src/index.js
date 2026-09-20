@@ -13,9 +13,12 @@ const require = createRequire(import.meta.url);
 const { version } = require('../package.json');
 
 const LOGO = `
-${chalk.cyan.bold('  ╭──────────────────────────╮')}
-${chalk.cyan.bold('  │        devclean 2.0       │')}
-${chalk.cyan.bold('  ╯──────────────────────────╯')}
+${chalk.cyan('██╗    ██╗██╗██████╗ ███████╗    ██████╗ ███████╗██╗   ██╗')}
+${chalk.cyan('██║    ██║██║██╔══██╗██╔════╝    ██╔══██╗██╔════╝██║   ██║')}
+${chalk.cyan('██║ █╗ ██║██║██████╔╝█████╗      ██║  ██║█████╗  ██║   ██║')}
+${chalk.cyan('██║███╗██║██║██╔═══╝ ██╔══╝      ██║  ██║██╔══╝  ╚██╗ ██╔╝')}
+${chalk.cyan('╚███╔███╔╝██║██║     ███████╗    ██████╔╝███████╗ ╚████╔╝ ')}
+${chalk.cyan(' ╚══╝╚══╝ ╚═╝╚═╝     ╚══════╝    ╚═════╝ ╚══════╝  ╚═══╝  ')}
 `;
 
 const SUBTITLE = chalk.gray('  Your dev environment deserves a deep clean.');

@@ -1,5 +1,11 @@
 # clean-workspace-cli
 
+## 2.0.1
+
+### Patch Changes
+
+- change logo tui
+
 ## 2.0.0-beta.0
 
 ### Major Changes
